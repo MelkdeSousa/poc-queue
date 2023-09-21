@@ -6,6 +6,8 @@ interface IEvent<T> {
   payload: T
 }
 
+type EventTypes = 'success' | 'failed'
+
 enum EventStatus {
   pending = 'pending',
   success = 'success',
@@ -20,11 +22,10 @@ interface IEventEnqueue<T> extends IEvent<T> {
 export class SimpleQueue<T = unknown> {
   private _queue: Array<IEventEnqueue<T>>
   private running: boolean
-  private successCount = 0
 
   constructor(
     private readonly job: (item: T) => Promise<void>,
-    private readonly maxRetries = 3,
+    private readonly maxRetries: number | 'unlimited' = 3,
     private retryDelay = 1000
   ) {
     this._queue = []
@@ -35,6 +36,10 @@ export class SimpleQueue<T = unknown> {
     return Array.from(this._queue.map(e => ({ id: e.id, name: e.name, payload: e.payload })))
   }
 
+  addListener(eventType: EventTypes, listener: (item: IEvent<T>) => void) {
+    return DeviceEventEmitter.addListener(eventType, listener)
+  }
+
   push(item: IEvent<T>): void {
     this._queue.push({ ...item, retries: 0, status: EventStatus.pending })
     if (!this.running) {
@@ -43,8 +48,6 @@ export class SimpleQueue<T = unknown> {
   }
 
   async processQueue(): Promise<void> {
-    console.log(this._queue.filter(e => e.status === EventStatus.failed).length, this.successCount);
-
     const hasPending = this._queue.some(e => e.status === EventStatus.pending)
 
     if (!hasPending) {
@@ -56,12 +59,11 @@ export class SimpleQueue<T = unknown> {
 
     try {
       if (status === EventStatus.pending) {
-        // console.log('Processando item', item.id);
         await this.job(item.payload)
-        // this.successCount++
+        DeviceEventEmitter.emit('success' satisfies EventTypes, item)
       }
     } catch (error) {
-      const maxAttemptsRetry = retries < this.maxRetries
+      const maxAttemptsRetry = this.maxRetries !== `unlimited` ? retries < this.maxRetries : true
 
       if (maxAttemptsRetry) {
         const nextRetryAtMilliseconds = this.retryDelay + (this.retryDelay * 0.25 * (retries + 1))
@@ -73,15 +75,14 @@ export class SimpleQueue<T = unknown> {
         setTimeout(() => {
           this.processQueue()
         }, nextRetryAtMilliseconds)
+
         return
       }
 
-      DeviceEventEmitter.emit('failed', item.payload)
+      DeviceEventEmitter.emit('failed' satisfies EventTypes, item)
 
       this._queue.push({ ...item, retries, status: EventStatus.failed })
     }
-
-    // Continue processando a fila
     this.processQueue()
   }
 }
@@ -90,14 +91,13 @@ export class SimpleQueue<T = unknown> {
 async function processItem(item: string): Promise<void> {
   await new Promise((resolve, reject) => {
     setTimeout(() => {
-      if (Math.random() < 0.5) {
+      if (Math.random() < 0.8) {
         reject(new Error('Falha na execução da função'))
       } else {
-        DeviceEventEmitter.emit('precessed', item)
         resolve(undefined)
       }
     }, 1000)
   })
 }
 
-export const queue = new SimpleQueue(processItem, 2, 1000)
+export const queue = new SimpleQueue(processItem, 3, 1000)
