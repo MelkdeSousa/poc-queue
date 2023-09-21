@@ -1,20 +1,20 @@
 import { DeviceEventEmitter } from "react-native"
 
-interface IEvent<T> {
+export interface IEvent<T> {
   id: string
   name: string
   payload: T
 }
 
-type EventTypes = 'success' | 'failed'
+export type EventTypes = 'success' | 'failed'
 
-enum EventStatus {
+export enum EventStatus {
   pending = 'pending',
   success = 'success',
   failed = 'failed',
 }
 
-interface IEventEnqueue<T> extends IEvent<T> {
+export interface IEventEnqueue<T> extends IEvent<T> {
   retries: number
   status: EventStatus
 }
