@@ -8,5 +8,6 @@
     "vs-code-prettier-eslint.prettierLast": "true",
     "[typescriptreact]": {
         "editor.defaultFormatter": "vscode.typescript-language-features"
-    } // set as "true" to run 'prettier' last not first
+    },
+    "typescript.tsdk": "node_modules/typescript/lib" // set as "true" to run 'prettier' last not first
 }
