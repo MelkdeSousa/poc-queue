@@ -4,7 +4,7 @@ import { storage } from "../lib/storage"
 import { startTask, stopTask } from "../lib/tasks"
 
 export const BackgroundTasks = () => {
-    let [lastValue, setLastValue] = useState(storage.getNumber('@poc-queue:lastValue'))
+    let [lastValue, setLastValue] = useState(storage.getNumber('@poc-queue:lastValue') ?? 0)
 
     useEffect(() => {
         const { remove } = storage.addOnValueChangedListener((key) => {
