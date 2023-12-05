@@ -1,3 +1,4 @@
+import { DownloadDriversUsecase } from '@/core/drivers/download-drivers.usecase';
 import BackgroundService from 'react-native-background-actions';
 import { storage } from './storage';
 
@@ -34,25 +35,19 @@ const veryIntensiveTask = async (taskDataArguments: { delay: number }) => {
 type StartOptions = Parameters<typeof BackgroundService.start>['1'];
 
 const options: StartOptions = {
-    taskName: 'InfiniteLoopTask',
-    taskTitle: 'Infinite Loop Task',
-    taskDesc: 'Running in the background',
+    taskName: 'download-drivers',
+    taskTitle: 'Atualizando dados dos condutores',
+    taskDesc: '',
     taskIcon: {
         name: 'ic_launcher',
         type: 'mipmap',
     },
-    progressBar: {
-        max: 100,
-        value: 0,
-    },
-    parameters: {
-        delay: 500,
-    },
 }
 
+const downloadDriversUsecase = new DownloadDriversUsecase()
 
 export const startTask = async () => {
-    await BackgroundService.start(veryIntensiveTask, options);
+    await BackgroundService.start(downloadDriversUsecase.execute, options);
 }
 
 export const stopTask = async () => {
