@@ -1,26 +1,17 @@
-import { DownloadDriversUsecase as DownloadDriversUseCase } from '@/core/drivers/download-drivers.usecase';
+import { DownloadDriversUseCase } from '@/core/drivers/download-drivers.usecase';
+import { DriverFileManager } from '@/infra/utils/driver-file-manager';
+import { DriverStreamFileHandler } from '@/infra/utils/driver-stream-file-handler';
 import BackgroundService from 'react-native-background-actions';
 
-type StartOptions = Parameters<typeof BackgroundService.start>['1'];
+export type StartOptions = Parameters<typeof BackgroundService.start>['1'];
 
-const options: StartOptions = {
-  taskName: 'download-drivers',
-  taskTitle: 'Baixando dados',
-  taskDesc: '',
-  taskIcon: {
-    name: 'ic_launcher',
-    type: 'mipmap',
-  },
-};
+const downloadDriversUseCase = new DownloadDriversUseCase(
+  new DriverFileManager(),
+  new DriverStreamFileHandler()
+);
 
-const downloadDriversUseCase = new DownloadDriversUseCase();
-
-export const startTask = async () => {
-  try {
-    await downloadDriversUseCase.execute();
-  } catch (error) {
-    await BackgroundService.stop();
-  }
+export const handleDrivers = async () => {
+  await downloadDriversUseCase.execute();
 };
 
 export const stopTask = async () => {
