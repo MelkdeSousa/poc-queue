@@ -8,9 +8,11 @@ const EnvSchema = z.object({
   AWS_VEHICLE_LOAD: z.string().url(),
 });
 
-export const envs = EnvSchema.parse({
+const envs = EnvSchema.parse({
   AWS_ACCESS_KEY_ID,
   AWS_DRIVER_LOAD,
   AWS_SECRET_ACCESS_KEY,
   AWS_VEHICLE_LOAD,
 });
+
+export { envs };

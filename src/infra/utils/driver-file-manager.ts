@@ -8,7 +8,7 @@ import { extractDataFromS3URL } from './extractDataFromS3URL';
 
 export class DriverFileManager implements FileManager {
   async load(): Promise<string> {
-    const { bucket, key, region } = extractDataFromS3URL(envs.AWS_VEHICLE_LOAD);
+    const { bucket, key, region } = extractDataFromS3URL(envs.AWS_DRIVER_LOAD);
 
     const client = new S3Client({
       credentials: {
