@@ -13,9 +13,6 @@
       "@/*": [
         "./src/*"
       ],
-      "@watermelondb/*": [
-        "./src/infra/watermelondb/*"
-      ],
     }
   },
 }
