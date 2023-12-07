@@ -3,6 +3,8 @@ import { differenceInSeconds } from 'date-fns';
 import { Alert, DeviceEventEmitter } from 'react-native';
 import RNFetchBlob from 'react-native-blob-util';
 import { readString } from 'react-native-csv';
+import { realmConnection } from '../realm/connection';
+import { DriverModel } from '../realm/models/Driver';
 
 export class DriverStreamFileHandler implements StreamFileHandler {
   async execute(stream: ReadStream): Promise<void> {
@@ -45,8 +47,16 @@ export class DriverStreamFileHandler implements StreamFileHandler {
           name: row[2],
           state: row[3],
         }));
-      // process the chunk here
-      console.log(formattedChunk);
+
+      realmConnection.write(() => {
+        formattedChunk.forEach((driver) => {
+          const data = realmConnection.create<DriverModel>('Driver', {
+            name: driver.name,
+          });
+
+          console.log(`Driver ${driver.name} created with id ${data._id} :check:`);
+        });
+      });
 
       counterRows += formattedChunk.length;
       currentSizeRead += stream.bufferSize;

@@ -1,5 +1,5 @@
 import { DriverModel } from './models/Driver';
 
-export const realmConnection = await Realm.open({
+export const realmConnection = new Realm({
   schema: [DriverModel],
 });
