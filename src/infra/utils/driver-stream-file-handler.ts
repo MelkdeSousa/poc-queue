@@ -2,13 +2,13 @@ import { ReadStream, StreamFileHandler } from '@/core/drivers/download-drivers.u
 import { differenceInSeconds } from 'date-fns';
 import { Alert, DeviceEventEmitter } from 'react-native';
 import RNFetchBlob from 'react-native-blob-util';
+import { readString } from 'react-native-csv';
 
 export class DriverStreamFileHandler implements StreamFileHandler {
   async execute(stream: ReadStream): Promise<void> {
     const { size } = await RNFetchBlob.fs.stat(stream.path);
 
     let buffer = '';
-    let data = '';
     let counterRows = 0;
     let currentSizeRead = 0;
 
@@ -37,10 +37,18 @@ export class DriverStreamFileHandler implements StreamFileHandler {
         }
       }
 
+      const formattedChunk = readString(chunk)
+        .data.filter((row: string[]) => row.every((v) => !!v))
+        .map((row) => ({
+          status: row[0],
+          cnh: row[1],
+          name: row[2],
+          state: row[3],
+        }));
       // process the chunk here
+      console.log(formattedChunk);
 
-      data = chunk;
-      counterRows += data.split('\n').length;
+      counterRows += formattedChunk.length;
       currentSizeRead += stream.bufferSize;
 
       DeviceEventEmitter.emit('read-file', Math.floor((currentSizeRead / size) * 100));
