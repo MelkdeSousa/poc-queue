@@ -1,6 +1,8 @@
 import { PermissionsAndroid } from 'react-native';
 
 export type ReadStream = {
+  path: string;
+  bufferSize?: number;
   open(): void;
   onData(fn: (chunk: string | number[]) => void): void;
   onError(fn: (err: any) => void): void;
@@ -28,12 +30,14 @@ export class DownloadDriversUseCase {
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
     ]);
 
-    const path = await this.fileSystem.load();
+    // const path = await this.fileSystem.load();
 
     // /data/data/com.pocqueue/files/drivers.csv
 
-    const stream = await this.fileSystem.read(path);
+    const stream = await this.fileSystem.read(
+      '/data/data/com.melk_de_sousa.pocqueue/files/drivers.csv'
+    );
 
-    await this.handler.execute(stream);
+    this.handler.execute(stream);
   }
 }
