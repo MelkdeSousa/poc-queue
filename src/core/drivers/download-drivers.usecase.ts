@@ -30,13 +30,9 @@ export class DownloadDriversUseCase {
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
     ]);
 
-    // const path = await this.fileSystem.load();
+    const path = await this.fileSystem.load();
 
-    // /data/data/com.pocqueue/files/drivers.csv
-
-    const stream = await this.fileSystem.read(
-      '/data/data/com.melk_de_sousa.pocqueue/files/drivers.csv'
-    );
+    const stream = await this.fileSystem.read(path);
 
     this.handler.execute(stream);
   }
