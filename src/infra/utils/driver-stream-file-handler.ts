@@ -3,6 +3,7 @@ import { differenceInSeconds } from 'date-fns';
 import { Alert, DeviceEventEmitter } from 'react-native';
 import RNFetchBlob from 'react-native-blob-util';
 import { readString } from 'react-native-csv';
+import Realm from 'realm';
 import { realmConnection } from '../realm/connection';
 import { DriverModel } from '../realm/models/Driver';
 
@@ -50,10 +51,14 @@ export class DriverStreamFileHandler implements StreamFileHandler {
 
       realmConnection.write(() => {
         formattedChunk.forEach((driver) => {
-          realmConnection.create<DriverModel>('Driver', {
-            _id: new Realm.BSON.ObjectId(),
-            name: driver.name,
-          });
+          realmConnection.create<DriverModel>(
+            'Driver',
+            {
+              _id: new Realm.BSON.ObjectId(),
+              name: driver.name,
+            },
+            Realm.UpdateMode.Modified
+          );
         });
       });
 
