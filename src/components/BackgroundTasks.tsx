@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Button, DeviceEventEmitter, Text, View } from "react-native"
-import { handleDrivers, stopTask } from "../lib/tasks"
+import { handleDrivers } from "../lib/tasks"
 
 export const BackgroundTasks = () => {
     const [rows, setRows] = useState(0)
@@ -16,7 +16,7 @@ export const BackgroundTasks = () => {
             <Text>Rows: {rows}%</Text>
 
             <Button title="Run Task" onPress={handleDrivers} />
-            <Button title="Stop Task" onPress={stopTask} />
+            <Button title="Stop Task" onPress={() => console.log('Stop!')} />
         </View>
     )
 }

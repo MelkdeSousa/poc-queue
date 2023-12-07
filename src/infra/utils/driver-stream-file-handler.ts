@@ -50,11 +50,10 @@ export class DriverStreamFileHandler implements StreamFileHandler {
 
       realmConnection.write(() => {
         formattedChunk.forEach((driver) => {
-          const data = realmConnection.create<DriverModel>('Driver', {
+          realmConnection.create<DriverModel>('Driver', {
+            _id: new Realm.BSON.ObjectId(),
             name: driver.name,
           });
-
-          console.log(`Driver ${driver.name} created with id ${data._id} :check:`);
         });
       });
 
