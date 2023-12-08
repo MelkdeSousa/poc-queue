@@ -34,9 +34,9 @@ export class DriverStreamFileHandler implements StreamFileHandler {
             const lastNewlineIndex = chunk.lastIndexOf('\n');
             if (lastNewlineIndex !== -1) {
               // buffer the broken line
-              buffer = chunk.substr(lastNewlineIndex + 1);
+              buffer = chunk.substring(lastNewlineIndex + 1);
               // remove the broken line from the chunk
-              chunk = chunk.substr(0, lastNewlineIndex + 1);
+              chunk = chunk.substring(0, lastNewlineIndex + 1);
             } else {
               // no newline character, buffer the entire chunk
               buffer = chunk;
@@ -60,6 +60,8 @@ export class DriverStreamFileHandler implements StreamFileHandler {
                 {
                   _id: new Realm.BSON.ObjectId(),
                   name: driver.name,
+                  cnh: driver.cnh,
+                  state: driver.state,
                 },
                 Realm.UpdateMode.Modified
               );
