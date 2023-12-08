@@ -43,6 +43,6 @@ export class DownloadDriversUseCase {
 
     const stream = await this.fileSystem.read(path);
 
-    this.handler.execute(stream);
+    await this.handler.execute(stream);
   }
 }
