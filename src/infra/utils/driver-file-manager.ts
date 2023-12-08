@@ -25,13 +25,14 @@ export class DriverFileManager implements FileManager {
     const url = await getSignedUrl(client, command, { expiresIn: 3600 });
 
     try {
-      const { path } = await RNFetchBlob.config({
-        fileCache: true,
+      const path = `${RNFetchBlob.fs.dirs.CacheDir}/driver.csv`;
+      await RNFetchBlob.config({
+        path,
       }).fetch('GET', url, {
         'Content-Type': 'text/csv',
       });
 
-      return path();
+      return path;
     } catch (error) {
       console.log(error);
 

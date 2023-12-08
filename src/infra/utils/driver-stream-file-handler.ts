@@ -1,7 +1,9 @@
 import { ReadStream, StreamFileHandler } from '@/core/drivers/download-drivers.usecase';
+import { storage } from '@/lib/storage';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Alert, DeviceEventEmitter } from 'react-native';
+import backgroundServer from 'react-native-background-actions';
 import RNFetchBlob from 'react-native-blob-util';
 import { readString } from 'react-native-csv';
 import Realm from 'realm';
@@ -16,7 +18,7 @@ export class DriverStreamFileHandler implements StreamFileHandler {
     buffer = '',
     currentSizeRead = 0
   ) {
-    return (chunk: string) => {
+    return async (chunk: string) => {
       // append the buffer to the chunk
       chunk = buffer + chunk;
       buffer = '';
@@ -67,35 +69,55 @@ export class DriverStreamFileHandler implements StreamFileHandler {
 
       const percentage = Math.floor((currentSizeRead / size) * 100);
 
+      storage.set('@percentage', percentage);
+
       DeviceEventEmitter.emit('read-file', percentage);
     };
   }
 
   async execute(stream: ReadStream): Promise<void> {
-    const { size } = await RNFetchBlob.fs.stat(stream.path);
+    await backgroundServer.start(
+      async () => {
+        const { size } = await RNFetchBlob.fs.stat(stream.path);
 
-    let counterRows = 0;
+        let counterRows = 0;
 
-    stream.open();
-    const start = new Date();
+        stream.open();
+        const start = new Date();
 
-    stream.onData(this.handleData(size, stream.bufferSize, counterRows));
+        await backgroundServer.updateNotification({
+          taskDesc: 'Atualizando dados dos condutores',
+        });
 
-    stream.onError(async (err) => {
-      console.log('oops', err);
-      DeviceEventEmitter.emit('running-task', true);
-    });
+        stream.onData(this.handleData(size, stream.bufferSize, counterRows));
 
-    stream.onEnd(() => {
-      DeviceEventEmitter.emit('running-task', true);
+        stream.onError(async (err) => {
+          console.log('oops', err);
+          DeviceEventEmitter.emit('running-task', true);
+        });
 
-      Alert.alert(
-        'Atualização Finalizada!',
-        'Foram inseridas ' +
-          counterRows +
-          ' linhas em ' +
-          formatDistanceToNow(start, { includeSeconds: true, locale: ptBR })
-      );
-    });
+        stream.onEnd(async () => {
+          DeviceEventEmitter.emit('running-task', true);
+
+          await RNFetchBlob.fs.unlink(stream.path);
+
+          await backgroundServer.stop();
+
+          Alert.alert(
+            'Atualização Finalizada!',
+            'Feita em: ' + formatDistanceToNow(start, { includeSeconds: true, locale: ptBR })
+          );
+        });
+      },
+      {
+        taskName: 'driver-update',
+        taskTitle: 'Atualização de dados',
+        taskDesc: 'Atualizando dados dos condutores',
+        taskIcon: {
+          name: 'ic_launcher',
+          type: 'mipmap',
+        },
+      }
+    );
   }
 }

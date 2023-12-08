@@ -1,18 +1,22 @@
+import { storage } from "@/lib/storage"
 import { useEffect, useState } from "react"
 import { Button, DeviceEventEmitter, Text, View } from "react-native"
 import { handleDrivers } from "../core/drivers/presenters"
 
 export const BackgroundTasks = () => {
-    const [rows, setRows] = useState(0)
+    const [rows, setRows] = useState(storage.getNumber('@percentage') ?? 0)
     const [running, setRunning] = useState(false)
 
     useEffect(() => {
-        const unsubscribeReadFile = DeviceEventEmitter.addListener('read-file', setRows)
+        const unsubscribeStorage = storage.addOnValueChangedListener(key => {
+            if (key === '@percentage') {
+                setRows(storage.getNumber('@percentage'))
+            }
+        })
         const unsubscribeRunningTask = DeviceEventEmitter.addListener('running-task', setRunning)
 
-
         return () => {
-            unsubscribeReadFile.remove()
+            unsubscribeStorage.remove()
             unsubscribeRunningTask.remove()
         }
     }, [])
