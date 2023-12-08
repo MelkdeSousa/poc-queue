@@ -1,4 +1,4 @@
-import { PermissionsAndroid } from 'react-native';
+import { DeviceEventEmitter, PermissionsAndroid } from 'react-native';
 
 export type ReadStream = {
   path: string;
@@ -25,10 +25,19 @@ export class DownloadDriversUseCase {
   ) {}
 
   async execute() {
-    await PermissionsAndroid.requestMultiple([
+    DeviceEventEmitter.emit('running-task', true);
+
+    const status = await PermissionsAndroid.requestMultiple([
       PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
       PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
     ]);
+
+    for (const key in status) {
+      if (status[key] !== 'granted') {
+        DeviceEventEmitter.emit('running-task', false);
+        return;
+      }
+    }
 
     const path = await this.fileSystem.load();
 
