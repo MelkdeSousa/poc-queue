@@ -1,7 +1,6 @@
 import { FileManager, ReadStream } from '@/core/drivers/download-drivers.usecase';
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import * as FileSystem from 'expo-file-system';
 import RNFetchBlob from 'react-native-blob-util';
 import { envs } from '../config/env';
 import { extractDataFromS3URL } from './extractDataFromS3URL';
@@ -24,17 +23,15 @@ export class DriverFileManager implements FileManager {
     });
 
     const url = await getSignedUrl(client, command, { expiresIn: 3600 });
-    const path = FileSystem.documentDirectory + 'drivers.csv';
-    const downloader = FileSystem.createDownloadResumable(url, path, {
-      headers: {
-        'Content-Type': 'text/csv',
-      },
-    });
 
     try {
-      const { uri } = await downloader.downloadAsync();
+      const { path } = await RNFetchBlob.config({
+        fileCache: true,
+      }).fetch('GET', url, {
+        'Content-Type': 'text/csv',
+      });
 
-      return uri;
+      return path();
     } catch (error) {
       console.log(error);
 
