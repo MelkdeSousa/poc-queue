@@ -1,4 +1,4 @@
-package com.pocqueue;
+package com.melk_de_sousa.pocqueue;
 
 import android.os.Build;
 import android.os.Bundle;

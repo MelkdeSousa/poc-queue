@@ -6,6 +6,14 @@
     "assetBundlePatterns": [
       "**/*"
     ],
-    "plugins": []
+    "plugins": [
+      "react-native-background-fetch"
+    ],
+    "android": {
+      "package": "com.melk_de_sousa.pocqueue"
+    },
+    "ios": {
+      "bundleIdentifier": "pocqueue"
+    }
   }
 }
