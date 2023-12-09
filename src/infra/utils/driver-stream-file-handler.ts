@@ -1,9 +1,8 @@
 import { ReadStream, StreamFileHandler } from '@/core/drivers/download-drivers.usecase';
 import { storage } from '@/lib/storage';
 import { formatDistanceToNow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Alert, DeviceEventEmitter } from 'react-native';
-import backgroundServer from 'react-native-background-actions';
+import { DeviceEventEmitter } from 'react-native';
+import BackgroundFetch from 'react-native-background-fetch';
 import RNFetchBlob from 'react-native-blob-util';
 import { readString } from 'react-native-csv';
 import Realm from 'realm';
@@ -76,24 +75,25 @@ export class DriverStreamFileHandler implements StreamFileHandler {
   }
 
   async execute(stream: ReadStream): Promise<void> {
-    await backgroundServer.start(
-      async () => {
+    BackgroundFetch.configure(
+      {
+        stopOnTerminate: false,
+      },
+      async (taskId) => {
         const { size } = await RNFetchBlob.fs.stat(stream.path);
 
         let counterRows = 0;
 
         stream.open();
-        const start = new Date();
-
-        await backgroundServer.updateNotification({
-          taskDesc: 'Atualizando dados dos condutores',
-        });
+        const startTime = new Date().getTime();
 
         stream.onData(this.handleData(size, stream.bufferSize, counterRows));
 
         stream.onError(async (err) => {
           console.log('oops', err);
+
           DeviceEventEmitter.emit('running-task', true);
+          BackgroundFetch.finish(taskId);
         });
 
         stream.onEnd(async () => {
@@ -101,23 +101,22 @@ export class DriverStreamFileHandler implements StreamFileHandler {
 
           await RNFetchBlob.fs.unlink(stream.path);
 
-          await backgroundServer.stop();
+          console.log(`Time taken: ${formatDistanceToNow(startTime, { includeSeconds: true })}`);
 
-          Alert.alert(
-            'Atualização Finalizada!',
-            'Feita em: ' + formatDistanceToNow(start, { includeSeconds: true, locale: ptBR })
-          );
+          BackgroundFetch.finish(taskId);
         });
       },
-      {
-        taskName: 'driver-update',
-        taskTitle: 'Atualização de dados',
-        taskDesc: 'Atualizando dados dos condutores',
-        taskIcon: {
-          name: 'ic_launcher',
-          type: 'mipmap',
-        },
+      (taskId) => {
+        console.log(`Background fetch failed: ${taskId}`);
+        BackgroundFetch.finish(taskId);
       }
     );
+
+    BackgroundFetch.scheduleTask({
+      taskId: 'com.melk_de_sousa.pocqueue.driver_update',
+      forceAlarmManager: true,
+      delay: 500,
+      periodic: false,
+    });
   }
 }

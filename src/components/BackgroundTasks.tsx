@@ -27,6 +27,7 @@ export const BackgroundTasks = () => {
 
             <Button title="Run Task" onPress={handleDrivers} disabled={running} />
             <Button title="Stop Task" onPress={() => setRunning(false)} />
+            <Button title="Test press" />
         </View>
     )
 }
