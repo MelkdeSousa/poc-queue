@@ -1,7 +1,6 @@
 import { storage } from "@/lib/storage"
 import { useEffect, useState } from "react"
-import { Button, DeviceEventEmitter, Text, View } from "react-native"
-import { handleDrivers } from "../core/drivers/presenters"
+import { DeviceEventEmitter, SafeAreaView, StyleSheet, View } from "react-native"
 
 export const BackgroundTasks = () => {
     const [rows, setRows] = useState(storage.getNumber('@percentage') ?? 0)
@@ -22,12 +21,20 @@ export const BackgroundTasks = () => {
     }, [])
 
     return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 }}>
-            <Text>Rows: {rows}%</Text>
+        <SafeAreaView>
+            <View style={styles.screen}>
 
-            <Button title="Run Task" onPress={handleDrivers} disabled={running} />
-            <Button title="Stop Task" onPress={() => setRunning(false)} />
-            <Button title="Test press" />
-        </View>
+            </View>
+        </SafeAreaView>
     )
 }
+
+const styles = StyleSheet.create({
+    screen: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: 10
+    },
+
+})

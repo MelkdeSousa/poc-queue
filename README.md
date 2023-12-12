@@ -27,3 +27,9 @@ O objetivo desse projeto é realizar provas de conceitos com enfileiramento de f
   ```bash
   npm run android
   ```
+
+## Todo
+
+- [ ] Baixar, ler e salvar dados no banco
+- [ ] Execução em background
+- [ ] Contador de registros salvos
